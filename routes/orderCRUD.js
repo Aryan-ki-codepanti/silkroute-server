@@ -3,7 +3,7 @@ const router = express.Router();
 const orders = require("../models/Order");
 
 
-// get all orders
+// get all orders for all phone numbers GET: /api/orders/ no login
 router.get("/" , (req , res)=>{
 
     const getOrders = async ()=>{
@@ -14,8 +14,27 @@ router.get("/" , (req , res)=>{
     getOrders();
 
 });
+// get a particular order from GET: /api/orders/order/:id no login
+router.get("/order/:id" , async (req , res)=>{
 
-// get orders from particular phone number
+    try{
+        const data = await orders.findById(req.params.id);
+    
+        if (!data){
+            return res.status(404).json({error: "Not Found"});
+        }
+        res.status(200).json(data);
+    }
+    catch(error){
+        res.status(500).json({ error })
+    }
+
+
+});
+
+
+
+// get orders from particular phone number  POST: /api/orders/ login required
 router.post("/" , (req , res) => {
 
     const getData = async (phone)=>{
@@ -28,7 +47,7 @@ router.post("/" , (req , res) => {
 
 }) ;
 
-// create order from particular phone number , item array
+// create order from particular phone number , item array POST: /api/orders/create login required
 router.post("/create" , (req , res) => {
 
     const createOrder = async (data) =>{
@@ -37,12 +56,14 @@ router.post("/create" , (req , res) => {
         res.json(response);
     }
 
-    const amount = req.body.items.reduce((x , y) => x.price + y.price);
+    const prices = req.body.items.map(x => x.price);
+    const amount = prices.length === 0 ? 0 : prices.reduce((x , y) => x + y);
     createOrder({
         ...req.body,
         amount
     });
 
 }) ;
+
 
 module.exports = router;

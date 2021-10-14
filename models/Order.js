@@ -4,6 +4,10 @@ const {model , Schema} = mongoose;
 
 
 const OrderSchema = new Schema({
+    title: {
+        type: String,
+        required: true
+    },
     phone:  {
         type: String,
         required: true

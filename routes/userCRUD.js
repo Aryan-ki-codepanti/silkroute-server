@@ -3,7 +3,7 @@ const router = express.Router();
 const users = require("../models/User");
 
 
-// get all users
+// get all users with GET: /api/users no login required
 router.get("/" , (req , res)=>{
 
     const getUsers = async ()=>{
@@ -14,28 +14,43 @@ router.get("/" , (req , res)=>{
 });
 
 
-// get user data from particular phone number
+// get user data from particular phone number POST: /api/users login required
 router.post("/" , (req , res) => {
 
-    const getData = async (phone)=>{
-        const data = await users.findOne({phone: phone});
-        res.json(data);
+    try{
+        const getData = async (phone)=>{
+            const data = await users.findOne({phone: phone});
+            res.json(data);
+        }
+    
+        const phone = req.body.phone;
+        getData(phone);
     }
-
-    const phone = req.body.phone;
-    getData(phone);
+    catch(error){
+        res.status(500).json({error})
+    }
 
 }) ;
 
 
 
-// create user from particular phone number , item array
+// create user from particular phone number , item array POST: /api/users/create no login required
 router.post("/create" , (req , res) => {
 
     const createUser = async (data) =>{
-        const user = new users(data);
-        const response = await user.save();
-        res.json(response);
+
+        
+        // check if exists
+        const checkUser = await users.findOne(data);
+
+        if (!checkUser){
+            const user = new users(data);
+            const response = await user.save();
+            return res.json(response);
+        }
+        return res.json(checkUser);
+
+
     }
     createUser(req.body);
 
